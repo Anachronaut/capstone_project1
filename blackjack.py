@@ -18,6 +18,7 @@ namecpu = "Dealer-Bot 9000"
 
 hitlist = ["HIT", "hit", "Hit"]
 standlist = ["STAND", "stand", "Stand"]
+quitlist = ["QUIT","quit","Quit"]
 
 
 def deck_cut(deck): #cuts deck
@@ -32,11 +33,19 @@ def deck_shuffle(deck):
 
 
 def print_scores(score1,score2):
-        print(namep1+"'s Hand:",handp1, "Total:",score1) #displays player's hand
-        print()
-        print(namecpu+"'s Hand: ['#?' & ", handcpu[1:], "]") #displays dealer's hand with one hidden card
-        #print(namecpu+"'s Hand (DEBUG): ",handcpu, "Total:",score2)
-        print()
+    print()
+    print(namep1+"'s Hand:",handp1, "Total:",score1) #displays player's hand
+    print()
+    print(namecpu+"'s Hand: ['#?' & ", handcpu[1:], "]") #displays dealer's hand with one hidden card
+    #print(namecpu+"'s Hand (DEBUG): ",handcpu, "Total:",score2)
+    print()
+
+def print_scores_reveal(score1,score2):
+    print()
+    print(namep1+"'s Hand:",handp1, "Total:",score1) #displays player's hand
+    print()
+    print(namecpu+"'s Hand: ",handcpu, "Total:",score2) #displays dealer's full hand
+    print()
 
 
 def calc_scores(hand): #calculates and returns score values for player and dealer
@@ -62,6 +71,9 @@ def cpu_hit(name,hand): #dealer hit method
     scorecpu = calc_scores(handcpu)
     if scorecpu <= 16 and scorep1 <= 20: #dealer will hit if score is <=16 and player hasn't busted/gotten blackjack
         if scorep1 > scorecpu: #ensures dealer doesn't bust itself if it already has a higher score than the player
+            print()
+            print()
+            print()
             print(name,"hits")
             hit(hand,name)
             choice(handp1,namep1,handcpu,namecpu)
@@ -73,9 +85,11 @@ def check_scores(name,hand): #checks scores for bust or blackjack
     score = calc_scores(hand)
     if score >= 22: #BUST
         print(name, "BUSTED!")
+        print_scores_reveal(scorep1,scorecpu)
         print()
     elif score == 21: #BLACKJACK
         print(name, "got BLACKJACK!")
+        print_scores_reveal(scorep1,scorecpu)
         print()
 
 
@@ -85,31 +99,43 @@ def hit(hand,name):
     check_scores(name,hand)
     scorep1 = calc_scores(handp1)
     scorecpu = calc_scores(handcpu)
-    print_scores(scorep1,scorecpu)
-    if scorep1 <= 20 and scorecpu <= 20 and name == namep1: #dealer hits on 16 or lower after player hits and neither has busted/gotten blackjack
-        if scorecpu <= 16:
-            cpu_hit(namecpu,handcpu)
-        choice(handp1,namep1,handcpu,namecpu)
+    if scorep1 <= 20 and scorecpu <= 20:  #dealer hits on 16 or lower after player hits and neither has busted/gotten blackjack
+        print_scores(scorep1,scorecpu)
+        if name == namep1:
+            if scorecpu <= 16:
+                cpu_hit(namecpu,handcpu)
+            choice(handp1,namep1,handcpu,namecpu)
 
 
 def choice(hand,name,handcpu,namecpu): #player choice to hit or stand
     scorep1 = calc_scores(handp1)
     scorecpu = calc_scores(handcpu)
     if scorep1 <= 20 and scorecpu <= 20:
-        ans = input("Would you like to (HIT) or (STAND)?: ")
+        print()
+        ans = input("Would you like to (HIT) or (STAND)? [Type QUIT to exit]: ")
+        print()
+        print()
         if ans in hitlist: #player hits
             hit(hand,name)
         elif ans in standlist: #player stands
             cpu_hit(namecpu,handcpu) #dealer hits if appropriate
             scorep1 = calc_scores(handp1)
             scorecpu = calc_scores(handcpu)
-            if scorep1 > scorecpu: #player stands with higher score
+            if scorep1 > scorecpu and scorep1 <= 21: #player stands with higher score
                 print(name, "WINS!")
-            elif scorecpu > scorep1: #player stands with lower score
+                print()
+                print_scores_reveal(scorep1,scorecpu)
+            elif scorecpu > scorep1 and scorecpu <=21: #player stands with lower score
                 print(namecpu, "WINS!")
-            elif scorep1 == scorecpu: #push on stand in case of a tie
+                print()
+                print_scores_reveal(scorep1,scorecpu)
+            elif scorep1 == scorecpu and scorep1 <= 21 and scorecpu <= 21: #push on stand in case of a tie
                 print("PUSH!")
-        else:
+                print()
+                print_scores_reveal(scorep1,scorecpu)
+        elif ans in quitlist: #player quits
+            quit()
+        elif ans not in hitlist or standlist or quitlist:
             print("Invalid Entry, Please Try Again")
             choice(hand,name,handcpu,namecpu)
 
@@ -124,8 +150,8 @@ def deal(deck,handp1,handcpu,namep1,namecpu): #deals initial hands
     check_scores(namecpu,handcpu)
     scorep1 = calc_scores(handp1)
     scorecpu = calc_scores(handcpu)
-    print_scores(scorep1,scorecpu)
     if scorep1 <= 20 and scorecpu <= 20: #presents hit/stand choice if neither player has busted/gotten blackjack
+        print_scores(scorep1,scorecpu)
         choice(handp1,namep1,handcpu,namecpu)
 
 
